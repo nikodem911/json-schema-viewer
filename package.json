@@ -34,7 +34,7 @@
       "editor/title": [
         {
           "command": "jsonSchemaViewer.preview",
-          "when": "resourceFilename =~ /\\.schema\\.json$/",
+          "when": "resourceExtname == .json || resourceLangId == json",
           "group": "navigation"
         }
       ],
@@ -48,14 +48,14 @@
       "explorer/context": [
         {
           "command": "jsonSchemaViewer.preview",
-          "when": "resourceFilename =~ /\\.schema\\.json$/",
+          "when": "resourceExtname == .json || resourceLangId == json",
           "group": "navigation"
         }
       ],
       "explorer/title": [
         {
           "command": "jsonSchemaViewer.preview",
-          "when": "resourceFilename =~ /\\.schema\\.json$/",
+          "when": "resourceExtname == .json || resourceLangId == json",
           "group": "navigation"
         }
       ]
