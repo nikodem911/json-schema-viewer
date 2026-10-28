@@ -104,48 +104,47 @@ export class SchemaLoader {
       return posMap;
     }
 
-    const traverse = (node: jsonc.Node, path: string[]) => {
-      const currentPath = path.join('.');
-      if (node.offset !== undefined) {
-        const pos = jsonc.getLocation(sourceText, node.offset);
-        const line = pos.path.length === 0 ? 0 : this.offsetToLine(sourceText, node.offset);
-        posMap.set(currentPath, line);
+    // Precompute line start offsets once so each lookup is a binary search
+    // instead of a rescan of the text from the beginning (which is O(n^2) on large files).
+    const lineStarts: number[] = [0];
+    for (let i = 0; i < sourceText.length; i++) {
+      if (sourceText.charCodeAt(i) === 10) {
+        lineStarts.push(i + 1);
       }
+    }
+    const offsetToLine = (offset: number): number => {
+      let lo = 0;
+      let hi = lineStarts.length - 1;
+      while (lo < hi) {
+        const mid = (lo + hi + 1) >> 1;
+        if (lineStarts[mid] <= offset) {
+          lo = mid;
+        } else {
+          hi = mid - 1;
+        }
+      }
+      return lo;
+    };
+
+    const traverse = (node: jsonc.Node, currentPath: string) => {
+      posMap.set(currentPath, currentPath === '' ? 0 : offsetToLine(node.offset));
 
       if (node.type === 'object' && node.children) {
         for (const child of node.children) {
           if (child.type === 'property' && child.children && child.children.length >= 2) {
-            const keyNode = child.children[0];
-            const valueNode = child.children[1];
-            const key = keyNode.value;
-            traverse(valueNode, [...path, key]);
+            const key = child.children[0].value;
+            traverse(child.children[1], currentPath === '' ? String(key) : `${currentPath}.${key}`);
           }
         }
       } else if (node.type === 'array' && node.children) {
         node.children.forEach((child, idx) => {
-          traverse(child, [...path, String(idx)]);
+          traverse(child, currentPath === '' ? String(idx) : `${currentPath}.${idx}`);
         });
       }
     };
 
-    traverse(root, []);
+    traverse(root, '');
     return posMap;
-  }
-
-  /**
-   * Converts a character offset to a zero-based line number.
-   * @param text The source text.
-   * @param offset The character offset.
-   * @returns The zero-based line number.
-   */
-  private offsetToLine(text: string, offset: number): number {
-    let line = 0;
-    for (let i = 0; i < offset && i < text.length; i++) {
-      if (text[i] === '\n') {
-        line++;
-      }
-    }
-    return line;
   }
 
   /**
