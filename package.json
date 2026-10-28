@@ -3,7 +3,7 @@
   "displayName": "JSON Schema Viewer",
   "icon": "images/viewer-icon-white.png",
   "description": "Visualize JSON Schema files in an interactive expandable tree view",
-  "version": "1.0.2",
+  "version": "1.0.3-1",
   "private": true,
   "publisher": "miman",
   "repository": {
@@ -70,6 +70,7 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run clean && npm run compile && npm run compile:webview",
+    "package": "vsce package",
     "debug": "npm run watch",
     "compile": "node esbuild.extension.js",
     "compile:webview": "node esbuild.webview.js",
