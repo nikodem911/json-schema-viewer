@@ -255,7 +255,10 @@ function renderPropertyContent(container: HTMLElement, prop: any, rootSchema: an
   if (prop.default !== undefined) {
     detailsHtml += `<div class="property-detail-row"><span class="property-detail-label">Default:</span><span class="property-detail-value">${escapeHtml(JSON.stringify(prop.default))}</span></div>`;
   }
-  if (prop.example !== undefined) {
+  if (Array.isArray(prop.examples) && prop.examples.length > 0) {
+    const label = prop.examples.length > 1 ? 'Examples:' : 'Example:';
+    detailsHtml += `<div class="property-detail-row"><span class="property-detail-label">${label}</span><span class="property-detail-value">${escapeHtml(prop.examples.map((e: unknown) => JSON.stringify(e)).join(', '))}</span></div>`;
+  } else if (prop.example !== undefined) {
     detailsHtml += `<div class="property-detail-row"><span class="property-detail-label">Example:</span><span class="property-detail-value">${escapeHtml(JSON.stringify(prop.example))}</span></div>`;
   }
   if (prop.format) {

@@ -125,6 +125,7 @@ export function hasNestedContent(prop: any): boolean {
     prop.enum ||
     prop.default !== undefined ||
     prop.example !== undefined ||
+    (Array.isArray(prop.examples) && prop.examples.length > 0) ||
     prop.format ||
     prop.pattern ||
     prop.minimum !== undefined ||
@@ -136,6 +137,9 @@ export function hasNestedContent(prop: any): boolean {
 
 export function generateExampleValue(prop: any, rootSchema: any, bundle: SchemaBundle, visitedRefs: Set<string>): any {
   if (!prop) return null;
+
+  // Schema-provided examples take precedence, including those placed next to a $ref.
+  if (Array.isArray(prop.examples) && prop.examples.length > 0) return prop.examples[0];
 
   if (prop.$ref) {
     if (visitedRefs.has(prop.$ref)) {
