@@ -1,4 +1,4 @@
-import { escapeHtml, generateExampleValue, getType, hasNestedContent, hasRemoteRef, resolveRef, type SchemaBundle, syntaxHighlightJson } from './viewerCore';
+import { escapeHtml, generateExampleValue, getEnumValues, getType, hasNestedContent, hasRemoteRef, resolveRef, type SchemaBundle, syntaxHighlightJson } from './viewerCore';
 
 export type RenderSchemaOptions = {
   schema: any;
@@ -285,8 +285,10 @@ function renderPropertyContent(container: HTMLElement, prop: any, rootSchema: an
   if (prop.maxItems !== undefined) {
     detailsHtml += `<div class="property-detail-row"><span class="property-detail-label">Max Items:</span><span class="property-detail-value">${String(prop.maxItems)}</span></div>`;
   }
-  if (prop.enum) {
-    detailsHtml += `<div class="property-detail-row"><span class="property-detail-label">Enum Values:</span><span class="property-detail-value"><div class="enum-values">${prop.enum
+  const enumInfo = getEnumValues(prop);
+  if (enumInfo) {
+    const label = enumInfo.extensible ? 'Enum Values:' : 'Enum Values:';
+    detailsHtml += `<div class="property-detail-row"><span class="property-detail-label">${label}</span><span class="property-detail-value"><div class="enum-values">${enumInfo.values
       .map((v: any) => `<span class="enum-value">${escapeHtml(JSON.stringify(v))}</span>`)
       .join('')}</div></span></div>`;
   }

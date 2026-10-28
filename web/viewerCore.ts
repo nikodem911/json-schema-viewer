@@ -113,6 +113,18 @@ export function getType(prop: any): string {
   return 'any';
 }
 
+/**
+ * Returns the allowed values of a closed `enum` or an open `x-extensible-enum`
+ * (a list of known values that does not reject unknown ones).
+ */
+export function getEnumValues(prop: any): { values: any[]; extensible: boolean } | undefined {
+  if (!prop) return undefined;
+  if (Array.isArray(prop.enum)) return { values: prop.enum, extensible: false };
+  const extensibleValues = prop['x-extensible-enum'];
+  if (Array.isArray(extensibleValues)) return { values: extensibleValues, extensible: true };
+  return undefined;
+}
+
 export function hasNestedContent(prop: any): boolean {
   if (!prop) return false;
   return !!(
@@ -122,7 +134,7 @@ export function hasNestedContent(prop: any): boolean {
     prop.anyOf ||
     prop.allOf ||
     prop.description ||
-    prop.enum ||
+    getEnumValues(prop) ||
     prop.default !== undefined ||
     prop.example !== undefined ||
     (Array.isArray(prop.examples) && prop.examples.length > 0) ||
@@ -154,7 +166,8 @@ export function generateExampleValue(prop: any, rootSchema: any, bundle: SchemaB
 
   if (prop.example !== undefined) return prop.example;
   if (prop.default !== undefined) return prop.default;
-  if (prop.enum && prop.enum.length > 0) return prop.enum[0];
+  const enumInfo = getEnumValues(prop);
+  if (enumInfo && enumInfo.values.length > 0) return enumInfo.values[0];
   if (prop.const !== undefined) return prop.const;
 
   if (prop.oneOf && prop.oneOf.length > 0) {

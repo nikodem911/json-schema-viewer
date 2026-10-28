@@ -1,4 +1,4 @@
-import { escapeHtml, getType, hasNestedContent, resolveRef, type SchemaBundle } from './viewerCore';
+import { escapeHtml, getEnumValues, getType, hasNestedContent, resolveRef, type SchemaBundle } from './viewerCore';
 
 export type TreeRenderOptions = {
   schema: any;
@@ -130,7 +130,8 @@ function renderNode(
   };
 
   // Use "enum" as the display type for enum properties
-  let displayType = resolvedProp.enum ? 'enum' : type;
+  const enumInfo = getEnumValues(resolvedProp);
+  let displayType = enumInfo ? 'enum' : type;
 
   // Show referenced type names for objects and arrays
   if (node.prop.$ref) {
@@ -163,8 +164,9 @@ function renderNode(
     }
   }
   // Always show enum values
-  if (resolvedProp.enum) {
-    metaHtml += `<div class="tree-node-meta-item">Enum: <span class="tree-enum-values">${resolvedProp.enum.map((v: any) => JSON.stringify(v)).join(', ')}</span></div>`;
+  if (enumInfo) {
+    const label = enumInfo.extensible ? 'Enum (extensible)' : 'Enum';
+    metaHtml += `<div class="tree-node-meta-item">${label}: <span class="tree-enum-values">${escapeHtml(enumInfo.values.map((v: any) => JSON.stringify(v)).join(', '))}</span></div>`;
   }
 
   nodeEl.innerHTML = `
