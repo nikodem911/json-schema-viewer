@@ -101,6 +101,10 @@ function renderProperty(name: string, prop: any, isRequired: boolean, rootSchema
   const description = resolvedProp.description || '';
   const isImported = resolvedProp.__isImported || hasRemoteRef(prop);
   const isMissing = resolvedProp.__isMissing;
+  const isDeprecated = prop.deprecated === true || resolvedProp.deprecated === true;
+  if (isDeprecated) {
+    wrapper.classList.add('deprecated');
+  }
 
   // Get source line for this property
   const sourceLine = sourcePositions[jsonPath];
@@ -135,7 +139,7 @@ function renderProperty(name: string, prop: any, isRequired: boolean, rootSchema
   }
   header.innerHTML = `
     ${hasChildren ? `<svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>` : '<div style="width: 24px;"></div>'}
-    <span class="property-name">${escapeHtml(name)}</span>
+    <span class="property-name"${isDeprecated ? ' title="Deprecated"' : ''}>${escapeHtml(name)}</span>
     <span class="property-type type-${escapeHtml(type)}">${type === 'missing' ? 'file not found' : escapeHtml(displayType)}</span>
     ${isRequired ? '<span class="required-badge">required</span>' : ''}
     ${isImported ? '<span class="imported-badge">imported</span>' : ''}
@@ -358,6 +362,10 @@ function renderDefinition(name: string, def: any, rootSchema: any, bundle: Schem
   const description = resolvedDef.description || '';
   const isImported = resolvedDef.__isImported || hasRemoteRef(def);
   const isMissing = resolvedDef.__isMissing;
+  const isDeprecated = resolvedDef.deprecated === true;
+  if (isDeprecated) {
+    wrapper.classList.add('deprecated');
+  }
 
   // Get source line for this definition
   const jsonPath = `${defsPath}.${name}`;
@@ -370,7 +378,7 @@ function renderDefinition(name: string, def: any, rootSchema: any, bundle: Schem
   }
   header.innerHTML = `
     ${hasChildren ? `<svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>` : '<div style="width: 24px;"></div>'}
-    <span class="property-name">${escapeHtml(name)}</span>
+    <span class="property-name"${isDeprecated ? ' title="Deprecated"' : ''}>${escapeHtml(name)}</span>
     <span class="property-type type-${escapeHtml(type)}">${type === 'missing' ? 'file not found' : escapeHtml(type)}</span>
     ${isImported ? '<span class="imported-badge">imported</span>' : ''}
     ${isMissing ? '<span class="missing-badge">file not found</span>' : ''}

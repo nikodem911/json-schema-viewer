@@ -97,6 +97,10 @@ function renderNode(
   nodeEl.id = `node-${node.id}`;
 
   const resolvedProp = resolveRef(node.prop, rootSchema, bundle);
+  const isDeprecated = node.prop.deprecated === true || resolvedProp.deprecated === true;
+  if (isDeprecated) {
+    nodeEl.classList.add('deprecated');
+  }
 
   // If this node's prop has a $ref, we need to use the definition path for source lookup
   let effectiveJsonPath = node.jsonPath || '';
@@ -172,7 +176,7 @@ function renderNode(
   nodeEl.innerHTML = `
     <div class="tree-node-header">
       <div class="tree-node-title-row">
-        <span class="property-name">${escapeHtml(node.name)}</span>
+        <span class="property-name"${isDeprecated ? ' title="Deprecated"' : ''}>${escapeHtml(node.name)}</span>
         ${node.isRequired ? '<span class="required-badge">required</span>' : ''}
       </div>
       <span class="property-type type-${escapeHtml(displayType)}">${escapeHtml(displayType)}</span>

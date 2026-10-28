@@ -339,6 +339,16 @@ export function getStyles(): string {
             white-space: nowrap;
         }
 
+        .schema-object.deprecated > .schema-object-header,
+        .tree-node.deprecated > .tree-node-header {
+            opacity: 0.5;
+        }
+
+        .schema-object.deprecated > .schema-object-header .property-name,
+        .tree-node.deprecated > .tree-node-header .property-name {
+            text-decoration: line-through;
+        }
+
         .schema-object-content {
             display: none;
             padding: 12px;
