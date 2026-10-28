@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import defaultSchema from '../../examples/example.schema.json';
 import { SchemaViewer } from '../../web/react';
+import { SchemaPasteInput } from './schemaPasteInput';
 
 type LoadState =
   | { kind: 'loading' }
@@ -16,6 +17,10 @@ export function App() {
   const [state, setState] = useState<LoadState>({ kind: 'loading' });
 
   const schemaUrl = useMemo(() => getSchemaUrlFromQuery(), []);
+
+  const pasteInput = (
+    <SchemaPasteInput onSchemaLoaded={(schema) => setState({ kind: 'loaded', schema })} />
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -47,6 +52,7 @@ export function App() {
   if (state.kind === 'error') {
     return (
       <div style={{ padding: 16 }}>
+        {pasteInput}
         <h1 style={{ fontSize: 18, marginBottom: 8 }}>JSON Schema Viewer</h1>
         <div>Could not load schema.</div>
         <pre style={{ marginTop: 12, whiteSpace: 'pre-wrap' }}>{state.message}</pre>
@@ -61,5 +67,10 @@ export function App() {
     return <div style={{ padding: 16 }}>Loading...</div>;
   }
 
-  return <SchemaViewer schema={state.schema} bundle={{}} importedFileNames={[]} missingFileNames={[]} />;
+  return (
+    <>
+      {pasteInput}
+      <SchemaViewer schema={state.schema} bundle={{}} importedFileNames={[]} missingFileNames={[]} />
+    </>
+  );
 }
