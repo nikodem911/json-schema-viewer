@@ -143,12 +143,45 @@ function renderProperty(name: string, prop: any, isRequired: boolean, rootSchema
     ${description ? `<span class="property-description">${escapeHtml(description)}</span>` : ''}
   `;
 
+  wrapper.appendChild(header);
+
+  attachLazyContent(wrapper, header, hasChildren && !isMissing, sourceLine, activeLinkEnabled, onNavigateToSource, content =>
+    renderPropertyContentWithToggle(content, resolvedProp, rootSchema, bundle, sourcePositions, activeLinkEnabled, onNavigateToSource, jsonPath)
+  );
+
+  return wrapper;
+}
+
+/**
+ * Wires up expand/collapse on a header. Nested content is rendered only on first
+ * expansion, which keeps large schemas fast and prevents infinite recursion on
+ * self-referencing ($ref cycle) schemas.
+ */
+function attachLazyContent(
+  wrapper: HTMLElement,
+  header: HTMLElement,
+  expandable: boolean,
+  sourceLine: number | undefined,
+  activeLinkEnabled: boolean,
+  onNavigateToSource: ((line: number) => void) | undefined,
+  renderChildren: (content: HTMLElement) => void
+): void {
+  let content: HTMLElement | null = null;
+  if (expandable) {
+    content = document.createElement('div');
+    content.className = 'schema-object-content';
+    wrapper.appendChild(content);
+  }
+  let rendered = false;
+
   header.addEventListener('click', (e) => {
-    if (hasChildren) {
-      const content = wrapper.querySelector('.schema-object-content');
-      const icon = header.querySelector('.expand-icon');
-      content?.classList.toggle('expanded');
-      icon?.classList.toggle('expanded');
+    if (content) {
+      if (!rendered) {
+        rendered = true;
+        renderChildren(content);
+      }
+      content.classList.toggle('expanded');
+      header.querySelector('.expand-icon')?.classList.toggle('expanded');
     }
 
     // Navigate to source if active link is enabled and we have a source line
@@ -157,17 +190,6 @@ function renderProperty(name: string, prop: any, isRequired: boolean, rootSchema
       e.stopPropagation();
     }
   });
-
-  wrapper.appendChild(header);
-
-  if (hasChildren && !isMissing) {
-    const content = document.createElement('div');
-    content.className = 'schema-object-content';
-    renderPropertyContentWithToggle(content, resolvedProp, rootSchema, bundle, sourcePositions, activeLinkEnabled, onNavigateToSource, jsonPath);
-    wrapper.appendChild(content);
-  }
-
-  return wrapper;
 }
 
 function renderPropertyContentWithToggle(container: HTMLElement, prop: any, rootSchema: any, bundle: SchemaBundle, sourcePositions: { [key: string]: number }, activeLinkEnabled: boolean, onNavigateToSource: ((line: number) => void) | undefined, pathPrefix: string): void {
@@ -350,29 +372,11 @@ function renderDefinition(name: string, def: any, rootSchema: any, bundle: Schem
     ${description ? `<span class="property-description">${escapeHtml(description)}</span>` : ''}
   `;
 
-  header.addEventListener('click', (e) => {
-    if (hasChildren) {
-      const content = wrapper.querySelector('.schema-object-content');
-      const icon = header.querySelector('.expand-icon');
-      content?.classList.toggle('expanded');
-      icon?.classList.toggle('expanded');
-    }
-
-    // Navigate to source if active link is enabled and we have a source line
-    if (activeLinkEnabled && sourceLine !== undefined && onNavigateToSource) {
-      onNavigateToSource(sourceLine);
-      e.stopPropagation();
-    }
-  });
-
   wrapper.appendChild(header);
 
-  if (hasChildren && !isMissing) {
-    const content = document.createElement('div');
-    content.className = 'schema-object-content';
-    renderPropertyContentWithToggle(content, resolvedDef, rootSchema, bundle, sourcePositions, activeLinkEnabled, onNavigateToSource, jsonPath);
-    wrapper.appendChild(content);
-  }
+  attachLazyContent(wrapper, header, hasChildren && !isMissing, sourceLine, activeLinkEnabled, onNavigateToSource, content =>
+    renderPropertyContentWithToggle(content, resolvedDef, rootSchema, bundle, sourcePositions, activeLinkEnabled, onNavigateToSource, jsonPath)
+  );
 
   return wrapper;
 }
